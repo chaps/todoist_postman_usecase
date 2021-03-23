@@ -1,0 +1,23 @@
+{
+  "name": "todoist_postman_usecase",
+  "version": "1.0.0",
+  "description": "https://developer.todoist.com/rest/v1/",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chaps/todoist_postman_usecase.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chaps/todoist_postman_usecase/issues"
+  },
+  "homepage": "https://github.com/chaps/todoist_postman_usecase#readme",
+  "dependencies": {
+    "newman": "^5.2.2",
+    "newman-reporter-htmlextra": "^1.20.1"
+  }
+}

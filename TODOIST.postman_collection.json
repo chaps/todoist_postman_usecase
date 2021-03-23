@@ -1,0 +1,1017 @@
+{
+	"info": {
+		"_postman_id": "05aad7cf-9bfc-4303-9884-b67395c6cae4",
+		"name": "TODOIST",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "TASKS",
+			"item": [
+				{
+					"name": "create_new_task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const schema = {",
+									"    \"type\": \"object\",",
+									"    \"properties\":",
+									"    {",
+									"        \"id\": { \"type\": \"integer\" },",
+									"        \"content\": { \"type\": \"string\" }",
+									"    },",
+									"    \"required\": [\"id\", \"content\"]",
+									"};",
+									"",
+									"const jsonData = pm.response.json();",
+									"",
+									"// Validate status codes.",
+									"pm.test(\"Test expected successful response STATUS CODE \", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Validate content.",
+									"pm.test(\"Test expected JSON response content\", function () {",
+									"    pm.expect(jsonData.content).to.eql(pm.variables.get(\"content\"));",
+									"});",
+									"",
+									"// Validate JSON schema.",
+									"pm.test('Test expected schema', () => {",
+									"    pm.response.to.have.jsonSchema(schema);",
+									"});",
+									"",
+									"// Validate response time.",
+									"pm.test(\"Test expected response time \", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// Set task_id for further tests.",
+									"",
+									"pm.globals.set(\"taskId\", jsonData.id);",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const moment = require('moment');",
+									"const dyn_date = \"content_\" + moment().format(\"YYYYMMDDhhmmss\") + String(moment().milliseconds());",
+									"",
+									"pm.variables.set(\"content\", dyn_date);",
+									"pm.globals.set(\"content\", dyn_date);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{API_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"content\": \"{{content}}\", \"due_string\": \"tomorrow at 12:00\", \"due_lang\": \"en\", \"priority\": 4}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{DOMAIN}}/rest/v1/tasks",
+							"host": [
+								"{{DOMAIN}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_active_task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"//https://developer.todoist.com/rest/v1/#get-an-active-task",
+									"",
+									"const schema = {",
+									"    \"type\": \"object\",",
+									"    \"properties\":",
+									"    {",
+									"        \"id\": { \"type\": \"integer\" },",
+									"        \"content\": { \"type\": \"string\" }",
+									"    },",
+									"    \"required\": [\"id\", \"content\"]",
+									"};",
+									"",
+									"const jsonData = pm.response.json();",
+									"",
+									"",
+									"// Validate status codes.",
+									"pm.test(\"Test expected successful response STATUS CODE \", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"// Validate content.",
+									"pm.test(\"Test expected JSON response content\", function () {",
+									"    pm.expect(jsonData.content).to.eql(pm.globals.get(\"content\"));",
+									"});",
+									"",
+									"// Validate JSON schema.",
+									"pm.test('Test expected schema', () => {",
+									"    pm.response.to.have.jsonSchema(schema);",
+									"});",
+									"",
+									"// Validate response time.",
+									"pm.test(\"Test expected response time \", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"",
+									"pm.variables.set(\"taskId\", pm.globals.get(\"taskId\"));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{API_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{DOMAIN}}/rest/v1/tasks/{{taskId}}",
+							"host": [
+								"{{DOMAIN}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"tasks",
+								"{{taskId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_active_tasks",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Reference: https://developer.todoist.com/rest/v1/#get-active-tasks",
+									"",
+									"const schema = {",
+									"    \"type\": \"array\"",
+									"};",
+									"",
+									"const jsonData = pm.response.json();",
+									"",
+									"// Validate status codes.",
+									"pm.test(\"Test expected successful response STATUS CODE \", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"// Validate content.",
+									"pm.test(\"Test expected JSON response content\", function () {",
+									"",
+									"});",
+									"",
+									"// Validate JSON schema.",
+									"pm.test('Test expected schema', () => {",
+									"    pm.response.to.have.jsonSchema(schema);",
+									"});",
+									"",
+									"// Validate response time.",
+									"pm.test(\"Test expected response time \", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{API_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{DOMAIN}}/rest/v1/tasks",
+							"host": [
+								"{{DOMAIN}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_task",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const moment = require('moment');",
+									"const dyn_date = \"content_\" + moment().format(\"YYYYMMDDhhmmss\") + String(moment().milliseconds());",
+									"",
+									"pm.variables.set(\"taskId\", pm.globals.get(\"taskId\"));",
+									"pm.variables.set(\"new_content\", dyn_date);",
+									"pm.globals.set(\"new_content\", dyn_date);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Reference: https://developer.todoist.com/rest/v1/#update-a-task",
+									"",
+									"const schema = {",
+									"    \"type\": \"array\"",
+									"};",
+									"",
+									"",
+									"// Validate status codes.",
+									"pm.test(\"Test expected successful response STATUS CODE \", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"",
+									"// Validate content.",
+									"pm.test(\"Test expected JSON response content\", function () {",
+									"    pm.expect(pm.response.body).to.be.undefined;",
+									"});",
+									"",
+									"// Validate JSON schema.",
+									"pm.test('Test expected schema // Empty response throws JSONError when trying to parse.', () => {",
+									"    pm.expect(pm.response.json).to.throw();",
+									"});",
+									"",
+									"// Validate response time.",
+									"pm.test(\"Test expected response time \", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{API_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"content\": \"{{new_content}}\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{DOMAIN}}/rest/v1/tasks/{{taskId}}",
+							"host": [
+								"{{DOMAIN}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"tasks",
+								"{{taskId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "complete_tasks",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"taskId\", pm.globals.get(\"taskId\"));",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Reference: https://developer.todoist.com/rest/v1/#update-a-task",
+									"",
+									"",
+									"// Validate status codes.",
+									"pm.test(\"Test expected successful response STATUS CODE \", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"",
+									"// Validate content.",
+									"pm.test(\"Test expected JSON response content\", function () {",
+									"    pm.expect(pm.response.body).to.be.undefined;",
+									"});",
+									"",
+									"// Validate JSON schema.",
+									"pm.test('Test expected schema // Empty response throws JSONError when trying to parse.', () => {",
+									"    pm.expect(pm.response.json).to.throw();",
+									"});",
+									"",
+									"// Validate response time.",
+									"pm.test(\"Test expected response time \", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{API_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{DOMAIN}}/rest/v1/tasks/{{taskId}}/close",
+							"host": [
+								"{{DOMAIN}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"tasks",
+								"{{taskId}}",
+								"close"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reopen_task",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Reference: https://developer.todoist.com/rest/v1/#reopen-a-task",
+									"",
+									"",
+									"// Validate status codes.",
+									"pm.test(\"Test expected successful response STATUS CODE \", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"",
+									"// Validate content.",
+									"pm.test(\"Test expected JSON response content // validates empty body\", function () {",
+									"    pm.expect(pm.response.body).to.be.undefined;",
+									"});",
+									"",
+									"// Validate JSON schema.",
+									"pm.test('Test expected schema // Empty response throws JSONError when trying to parse.', () => {",
+									"    pm.expect(pm.response.json).to.throw();",
+									"});",
+									"",
+									"// Validate response time.",
+									"pm.test(\"Test expected response time \", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"taskId\", pm.globals.get(\"taskId\"));",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{API_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{DOMAIN}}/rest/v1/tasks/{{taskId}}/reopen",
+							"host": [
+								"{{DOMAIN}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"tasks",
+								"{{taskId}}",
+								"reopen"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_task",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"taskId\", pm.globals.get(\"taskId\"));",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Reference: https://developer.todoist.com/rest/v1/#reopen-a-task",
+									"",
+									"",
+									"// Validate status codes.",
+									"pm.test(\"Test expected successful response STATUS CODE \", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"",
+									"// Validate content.",
+									"pm.test(\"Test expected JSON response content // validates empty body\", function () {",
+									"    pm.expect(pm.response.body).to.be.undefined;",
+									"});",
+									"",
+									"// Validate JSON schema.",
+									"pm.test('Test expected schema // Empty response throws JSONError when trying to parse.', () => {",
+									"    pm.expect(pm.response.json).to.throw();",
+									"});",
+									"",
+									"// Validate response time.",
+									"pm.test(\"Test expected response time \", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{API_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{DOMAIN}}/rest/v1/tasks/{{taskId}}",
+							"host": [
+								"{{DOMAIN}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"tasks",
+								"{{taskId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TASKS_NEGATIVE_TESTS",
+			"item": [
+				{
+					"name": "create_new_task_empty_payload",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"",
+									"// Validate status codes.",
+									"pm.test(\"Test expected response STATUS CODE 400 \", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const moment = require('moment');",
+									"const dyn_date = \"content_\" + moment().format(\"YYYYMMDDhhmmss\") + String(moment().milliseconds());",
+									"",
+									"pm.variables.set(\"content\", dyn_date);",
+									"pm.globals.set(\"content\", dyn_date);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{API_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{DOMAIN}}/rest/v1/tasks",
+							"host": [
+								"{{DOMAIN}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_active_tasks_invalid_params",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"",
+									"// Validate status codes.",
+									"pm.test(\"Test expected response STATUS CODE 400 \", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"",
+									"pm.variables.set(\"taskId\", pm.globals.get(\"taskId\"));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{API_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{DOMAIN}}/rest/v1/tasks?non_existing_param=12312312",
+							"host": [
+								"{{DOMAIN}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "non_existing_param",
+									"value": "12312312"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_active_task_invalid_taskId_value",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"",
+									"// Validate status codes.",
+									"pm.test(\"Test invalid taskId value expected response STATUS CODE 404 \", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"",
+									"pm.variables.set(\"taskId\", \"invalid_task_id\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{API_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{DOMAIN}}/rest/v1/tasks/{{taskId}}",
+							"host": [
+								"{{DOMAIN}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"tasks",
+								"{{taskId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_task_invalid_taskid_value",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"",
+									"pm.variables.set(\"taskId\", \"invalid_task_id\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"",
+									"// Validate status codes.",
+									"pm.test(\"Test invalid taskId value expected response STATUS CODE 404 \", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{API_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"content\": \"{{new_content}}\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{DOMAIN}}/rest/v1/tasks/{{taskId}}",
+							"host": [
+								"{{DOMAIN}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"tasks",
+								"{{taskId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "complete_tasks Copy",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"",
+									"pm.variables.set(\"taskId\", \"invalid_task_id\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"",
+									"// Validate status codes.",
+									"pm.test(\"Test invalid taskId value expected response STATUS CODE 404 \", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{API_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{DOMAIN}}/rest/v1/tasks/{{taskId}}/close",
+							"host": [
+								"{{DOMAIN}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"tasks",
+								"{{taskId}}",
+								"close"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reopen_task Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"",
+									"// Validate status codes.",
+									"pm.test(\"Test invalid taskId value expected response STATUS CODE 404 \", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"",
+									"pm.variables.set(\"taskId\", \"invalid_task_id\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{API_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{DOMAIN}}/rest/v1/tasks/{{taskId}}/reopen",
+							"host": [
+								"{{DOMAIN}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"tasks",
+								"{{taskId}}",
+								"reopen"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_task Copy",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"taskId\", \"invalid_task_id\");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"",
+									"// Validate status codes.",
+									"pm.test(\"Test invalid taskId value expected response STATUS CODE 404 \", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{API_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{DOMAIN}}/rest/v1/tasks/{{taskId}}",
+							"host": [
+								"{{DOMAIN}}"
+							],
+							"path": [
+								"rest",
+								"v1",
+								"tasks",
+								"{{taskId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
